@@ -9,20 +9,16 @@ class PdfGenerator(FPDF, DfConfigMixin):
     def __init__(self, 
                  order: str = '', 
                  vendor: str = '', 
-                 date: str = '', 
-                 totals=None, 
-                 city: str = 'CITY',
-                 company_name: str = 'STREET',
-                 address: str = 'ADDRESS'):
+                 date: str = ''):
         
         super().__init__(orientation="L", unit="mm", format="A4")
         self.order = order
         self.vendor = vendor
         self.date = date
-        self.totals = totals if totals else {}
-        self.city = city
-        self.company_name = company_name
-        self.address = address
+        self.totals = {}
+        self.city = self.settings_company['city']
+        self.company_name = self.settings_company['company_name']
+        self.address = self.settings_company['address']
         self.logo_path = os.path.join('images', 'logo.png')
 
         try:

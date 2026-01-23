@@ -28,6 +28,9 @@ class DfConfigMixin:
                   {'export_name': 'Material Description', 'column_name': 'Component-Material Description', 
                    'column_type': 'str', 'group_by': True, 'sum_columns': False, 'col_width': 25},]
     
+    settings_company = {'city': 'Company City',
+                        'company_name': 'Company Name',
+                        'address': 'Company Addres'}
 
     @property
     def _groupby_columns(self):
