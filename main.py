@@ -6,7 +6,7 @@ from pathlib import Path
 from widgets import FileBrowser, InputEntry, DatePicker
 from file_processor import FileProccessor
 from os import path
-from pdf_generator import pdf_generator
+from pdf_generator import PdfGenerator
 
 
 
@@ -19,20 +19,21 @@ class App(tk.Tk):
         self.resizable(False, False)
         self.rowconfigure((0,1,2), weight=1, uniform=1)
         self.columnconfigure(list(range(4)), weight=1, uniform='A')
-        self.iconbitmap(path.join('images','i.ico'))
-        
+        self.iconbitmap(resource_path(path.join('images', 'i.ico')))
+        self.file_proccessor = FileProccessor()
+
         # vars 
         self.file_path = tk.StringVar()
         self.order = tk.StringVar(value='')
         self.vendor = tk.StringVar(value='')
         self.date = tk.StringVar()
 
-        self.file_proccessor = FileProccessor()
+
         self.table = None
 
         self.frame_data = {
-            'Order': {'variable': self.order, 'rex': r'^82\d{8}$'},
-            'Vendor': {'variable': self.vendor, 'rex': r'^\d{9}[А-зA-z0-9 ]+$'}
+            'Order': {'variable': self.order, 'rex': r''},
+            'Vendor': {'variable': self.vendor, 'rex': r''}
         }
 
         # widgets
@@ -57,7 +58,9 @@ class App(tk.Tk):
     def generate(self):
         order = self.order.get()
         vendor = self.vendor.get()
+        date = self.date.get()
         filepath = Path(self.file_path.get())
+
 
         if not filepath.is_file():
             return messagebox.showerror('Error', 'Невалиден файл!')
@@ -71,12 +74,22 @@ class App(tk.Tk):
             self.file_proccessor.process_file()
         except Exception as e:
             return messagebox.showerror('Грешка при обработка', str(e))
+        
+        return self.create_pdf(order, vendor, date, self.file_proccessor.totals)
 
-        print(self.file_proccessor.df)
-        print(self.file_proccessor.totals)
-        print('----')
-        print(f'File: {self.file_path.get()}, Vendor: {self.vendor.get()}, Order: {self.order.get()}, Date: {self.date.get()}')
-        pdf_generator(self.file_proccessor.df)
+
+
+    def create_pdf(self, order, vendor, date, totals):
+        pdf_generator = PdfGenerator(order, vendor, date, totals)
+        pdf_generator.totals = self.file_proccessor.totals
+
+
+        try:
+            pdf_generator.generate_from_df(self.file_proccessor.df)
+        except Exception as e:
+            return messagebox.showerror('Грешка при генериране', str(e))
+        
+        return messagebox.showinfo('Успешно генериране!', 'Пакинг листа е генериран успешно!')
 
 
         
